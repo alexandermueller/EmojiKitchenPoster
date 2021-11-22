@@ -197,18 +197,19 @@ emojis = [
 api = "https://www.gstatic.com/android/keyboard/emojikitchen/"
 emojiPath = './emojis/'
 
-for i, emoji in enumerate(emojis):
-    if not os.path.isdir(emojiPath):
-        os.makedirs(emojiPath)
+if not os.path.isdir(emojiPath):
+    os.makedirs(emojiPath)
 
-    fullfilename = os.path.join(emojiPath, str(i) + ".svg")
-    getter.retrieve(emoji[3], fullfilename)
+# for i, emoji in enumerate(emojis):
+#     fullfilename = os.path.join(emojiPath, str(i) + ".svg")
+#     getter.retrieve(emoji[3], fullfilename)
 
 mergedEmojisPath = './merged'
 
-for i, link in enumerate(f):
-    if not os.path.isdir(merged):
-        os.makedirs(merged)
-    
+if not os.path.isdir(mergedEmojisPath):    
+    os.makedirs(mergedEmojisPath)
+
+# for i, link in enumerate(emojis):  
     # fullfilename = os.path.join(merged, str(i) + ".svg")
     # getter.retrieve(link, fullfilename)
+    # ${API}${emoji1[2]}/${u1}/${u1}_${u2}.png
