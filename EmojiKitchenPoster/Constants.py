@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 BOTTOM_DELTA = 75
+REMERGED_DIR = './remerged'
 POSTER_DIR = './poster'
 MERGED_DIR = './merged'
 EMOJIS_DIR = './emojis'
