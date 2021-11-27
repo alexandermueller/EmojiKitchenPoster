@@ -3,11 +3,15 @@
 
 import os
 import sys
+import string
 from Constants import *
 from PIL import Image, ImageDraw, ImageFont
     
 def clamp(minVal, val, maxVal):
     return max(minVal, min(val, maxVal))
+
+def getEmojiName(index):
+    return EMOJIS[index][0]
 
 def emojiText(index):
     return "%03d" % index
@@ -24,7 +28,7 @@ def mergedFileName(first, second):
 def main(argc, argv):
     print("Preparing poster file...")
     
-    font = ImageFont.truetype(FONT_TYPE, FONT_SIZE)
+    font = ImageFont.truetype(FONT_TYPE, int(FONT_SIZE / 2))
     rows = MAX_EMOJI_COUNT
     columns = MAX_EMOJI_COUNT
 
@@ -38,7 +42,7 @@ def main(argc, argv):
         startColumn, startRow = [clamp(0, int(argv[i * 2]) - 1, MAX_EMOJI_COUNT) if argv[i * 2] else MAX_EMOJI_COUNT for i in range(2)]
         columns, rows = [clamp(1, int(argv[i * 2 + 1]), MAX_EMOJI_COUNT) if argv[i * 2 + 1] else MAX_EMOJI_COUNT for i in range(2)]
 
-    # background = Image.open("./Assets/background.png").convert("RGBA")
+    background = Image.open("./Assets/background.png").convert("RGBA")
     finalW, finalH = (SPRITE_WIDTH * (columns + 1), SPRITE_HEIGHT * (rows + 1) + BOTTOM_DELTA)
     final = Image.new("RGBA", (finalW, finalH))
     draw = ImageDraw.Draw(final)
@@ -47,22 +51,22 @@ def main(argc, argv):
         os.makedirs(POSTER_DIR)
 
     # Draw background first
-    # print("Adding background...")
+    print("Adding background...")
     
     # origin = Image.open("./Assets/origin.png").convert("RGBA")
     # final.paste(origin, (0, 0, 340, 340))
 
-    # for i in range(columns + 1):
-    #     for j in range(rows + 1):
-    #         x, y = (i * SPRITE_WIDTH, j * SPRITE_HEIGHT)
-    #         final.paste(background, (x, y, x + SPRITE_WIDTH, y + SPRITE_HEIGHT))
+    for i in range(columns + 1):
+        for j in range(rows + 1):
+            x, y = (i * SPRITE_WIDTH, j * SPRITE_HEIGHT)
+            final.paste(background, (x, y, x + SPRITE_WIDTH, y + SPRITE_HEIGHT))
 
-    # cellWidth = background.size[0]
-    # croppedCell = background.crop((0, 0, cellWidth, BOTTOM_DELTA))
+    cellWidth = background.size[0]
+    croppedCell = background.crop((0, 0, cellWidth, BOTTOM_DELTA))
     
-    # for i in range(columns + 1):
-    #     x, y = (SPRITE_WIDTH * i, SPRITE_HEIGHT * (rows + 1))
-    #     final.paste(croppedCell, (x, y, x + cellWidth, y + BOTTOM_DELTA))
+    for i in range(columns + 1):
+        x, y = (SPRITE_WIDTH * i, SPRITE_HEIGHT * (rows + 1))
+        final.paste(croppedCell, (x, y, x + cellWidth, y + BOTTOM_DELTA))
 
     # Plop origin cell down
 
@@ -80,17 +84,14 @@ def main(argc, argv):
                 fileName = ""
                 first = 0
                 second = 0
-                fill = WHITE_FILL
+                fill = BLACK_FILL
 
                 if i == startColumn or j == startRow:
                     fill = RED_FILL
                     index = (j if i == startColumn else i) - 1
-                    text = emojiName = emojiText(index)
+                    text = emojiName = getEmojiName(index)
                     fileName = emojiFileName(index)
                 else:
-                    if i == j:
-                        fill = RED_FILL
-                    
                     iIndex = i - 1
                     jIndex = j - 1
 
@@ -104,8 +105,16 @@ def main(argc, argv):
                         first = iIndex
                         second = jIndex
 
-                    text = emojiName = mergedText(first, second)
+                    text = emojiName = "%s + %s" % (getEmojiName(first), getEmojiName(second))
                     fileName = mergedFileName(first, second)
+
+
+                text = string.capwords(text)
+                emojiName = string.capwords(emojiName)
+
+                if i == j:
+                        fill = RED_FILL
+                        text = emojiName = "%s x 2" % string.capwords(getEmojiName(first))
 
                 print("Adding Sprite: %s" % (emojiName))
 

@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 BOTTOM_DELTA = 75
-REMERGED_DIR = './remerged'
-POSTER_DIR = './poster'
-MERGED_DIR = './merged'
-EMOJIS_DIR = './emojis'
+REMERGED_DIR = './Assets/Remerged'
+POSTER_DIR = './Assets/Poster'
+MERGED_DIR = './Assets/Merged'
+EMOJIS_DIR = './Assets/Emojis'
 SPRITE_WIDTH, SPRITE_HEIGHT = (600, 600)
 FONT_SIZE = 30
 FONT_TYPE = "arial-unicode-ms.ttf"
