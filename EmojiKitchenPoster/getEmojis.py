@@ -40,11 +40,11 @@ def main(argc, argv):
     for i, line in enumerate(lines):
         components = line.split(',')
         
+        # If emojis.txt already has the data for that emoji, try to get it.
         if len(components) == 3:
-            emoji, code, name = components
-            code = code.replace('-u', '_')
-            emojiSVGFilename = f'{EMOJIS_DIR}/{"%03d" % i}.svg'
-
+            emoji, fileCode, name = components
+            code = fileCode.replace('-u', '_')
+            emojiSVGFilename = f'{EMOJIS_DIR}/{fileCode}.svg'
             if not os.path.isfile(emojiSVGFilename):
                 try:
                     print(f'-> Getting ({"%03d" % i}/{emojiTextFileLength - 1}): {name[:-1]}')
@@ -52,12 +52,13 @@ def main(argc, argv):
                 except:
                     print('Failed to download emoji svg.')
                     return
+        # Otherwise get the emojis and build up emojis.txt with the data.
         else:
             emoji = line[0]
             code = f'u{ord(emoji):x}'
             name = unicodedata.name(emoji)
             emojiData += f'{emoji},{code},{name}\n'
-            emojiSVGFilename = f'{EMOJIS_DIR}/{"%03d" % (i + exceptionsSeen)}.svg'
+            emojiSVGFilename = f'{EMOJIS_DIR}/{code}.svg'
 
             if not os.path.isfile(emojiSVGFilename):
                 try:
@@ -74,7 +75,7 @@ def main(argc, argv):
                 exceptionCodeForLink = f'u{"_".join(exception[2])}'
                 exceptionName = exception[0]
                 emojiData += f'{EXCEPTION_CHAR},{exceptionCode},{exceptionName}\n'
-                exceptionSVGFilename = f'{EMOJIS_DIR}/{"%03d" % (i + exceptionsSeen)}.svg'
+                exceptionSVGFilename = f'{EMOJIS_DIR}/{exceptionCode}.svg'
 
                 if not os.path.isfile(exceptionSVGFilename):
                     try:

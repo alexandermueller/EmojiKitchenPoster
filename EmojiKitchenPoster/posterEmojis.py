@@ -7,23 +7,25 @@ import string
 from Constants import *
 from PIL import Image, ImageDraw, ImageFont
     
+emojiTextFile = open(EMOJIS_TXT, 'r')
+lines = emojiTextFile.readlines()
+EMOJIS = [line[:-1].split(',') for line in lines]
+MAX_EMOJI_COUNT = len(lines)
+
 def clamp(minVal, val, maxVal):
     return max(minVal, min(val, maxVal))
 
+def getEmojiCode(index):
+    return EMOJIS[index][1]
+
 def getEmojiName(index):
-    return EMOJIS[index][0]
+    return EMOJIS[index][2]
 
-def emojiText(index):
-    return "%03d" % index
+def getEmojiFileName(index):
+    return "%s/%s.png" % (EMOJIS_DIR, getEmojiCode(index))
 
-def emojiFileName(index):
-    return "%s/%s.png" % (EMOJIS_DIR, emojiText(index))
-
-def mergedText(first, second):
-    return "%03d_%03d" % (first, second)
-
-def mergedFileName(first, second):
-    return "%s/%s.png" % (MERGED_DIR, mergedText(first, second))
+def getMergedFileName(first, second):
+    return "%s/%s_%s.png" % (MERGED_DIR, getEmojiCode(first), getEmojiCode(second))
 
 def main(argc, argv):
     print("Preparing poster file...")
@@ -53,8 +55,8 @@ def main(argc, argv):
     # Draw background first
     print("Adding background...")
     
-    # origin = Image.open("./Assets/origin.png").convert("RGBA")
-    # final.paste(origin, (0, 0, 340, 340))
+    origin = Image.open("./Assets/origin.png").convert("RGBA")
+    final.paste(origin, (0, 0, SPRITE_WIDTH, SPRITE_HEIGHT))
 
     for i in range(columns + 1):
         for j in range(rows + 1):
@@ -70,12 +72,10 @@ def main(argc, argv):
 
     # Plop origin cell down
 
-    # origin = Image.open("./Assets/origin.png").convert("RGBA")
-    # final.paste(origin, (0, 0, 340, 340))
+    origin = Image.open("./Assets/origin.png").convert("RGBA")
+    final.paste(origin, (0, 0, SPRITE_WIDTH, SPRITE_HEIGHT))
     
     # Draw sprites and text
-    
-    maxLineLength = 0
 
     for i in range(startColumn, min(startColumn + columns, MAX_EMOJI_COUNT) + 1):
         for j in range(startRow, min(startRow + rows, MAX_EMOJI_COUNT) + 1):
@@ -90,13 +90,13 @@ def main(argc, argv):
                     fill = RED_FILL
                     index = (j if i == startColumn else i) - 1
                     text = emojiName = getEmojiName(index)
-                    fileName = emojiFileName(index)
+                    fileName = getEmojiFileName(index)
                 else:
                     iIndex = i - 1
                     jIndex = j - 1
 
-                    if not os.path.isfile(mergedFileName(iIndex, jIndex)):
-                        if not os.path.isfile(mergedFileName(jIndex, iIndex)):
+                    if not os.path.isfile(getMergedFileName(iIndex, jIndex)):
+                        if not os.path.isfile(getMergedFileName(jIndex, iIndex)):
                             continue
 
                         first = jIndex
@@ -106,7 +106,7 @@ def main(argc, argv):
                         second = jIndex
 
                     text = emojiName = "%s + %s" % (getEmojiName(first), getEmojiName(second))
-                    fileName = mergedFileName(first, second)
+                    fileName = getMergedFileName(first, second)
 
 
                 text = string.capwords(text)
@@ -116,7 +116,7 @@ def main(argc, argv):
                         fill = RED_FILL
                         text = emojiName = "%s x 2" % string.capwords(getEmojiName(first))
 
-                print("Adding Sprite: %s" % (emojiName))
+                print("Adding Sprite (%03d, %03d): %s" % (first, second, emojiName))
 
                 current = Image.open(fileName).convert("RGBA")
 
@@ -125,9 +125,10 @@ def main(argc, argv):
                 deltaX, deltaY = (round((SPRITE_WIDTH - width) / 2), round((SPRITE_HEIGHT - height) / 2))
       
                 final.paste(current, (x + deltaX, y + deltaY, x + deltaX + width, y + deltaY + height), current)
-                                   
-                w, h = draw.textsize(text, font=font)
-                draw.text((x + (SPRITE_WIDTH - w) / 2, y + (SPRITE_HEIGHT - 33)), text, fill=fill, font=font)
+
+                for index, name in enumerate(text.split("+")):
+                    w, h = draw.textsize(name, font=font)
+                    draw.text((x + (SPRITE_WIDTH - w) / 2, y + (SPRITE_HEIGHT - 33) + (h * index)), name, fill=fill, font=font)
 
     # Finally, draw credits
 
