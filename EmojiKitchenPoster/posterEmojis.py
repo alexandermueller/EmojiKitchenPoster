@@ -113,8 +113,8 @@ def main(argc, argv):
                 emojiName = string.capwords(emojiName)
 
                 if i == j:
-                        fill = RED_FILL
-                        text = emojiName = "%s x 2" % string.capwords(getEmojiName(first))
+                    fill = RED_FILL
+                    text = emojiName = "%s x 2" % string.capwords(getEmojiName(first))
 
                 print("Adding Sprite (%03d, %03d): %s" % (first, second, emojiName))
 

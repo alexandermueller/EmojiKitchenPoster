@@ -43,12 +43,16 @@ def main(argc, argv):
         # If emojis.txt already has the data for that emoji, try to get it.
         if len(components) == 3:
             emoji, fileCode, name = components
-            code = fileCode.replace('-u', '_')
             emojiSVGFilename = f'{EMOJIS_DIR}/{fileCode}.svg'
+            
             if not os.path.isfile(emojiSVGFilename):
                 try:
-                    print(f'-> Getting ({"%03d" % i}/{emojiTextFileLength - 1}): {name[:-1]}')
-                    urllib.request.urlretrieve(emojiSVGLink % code, emojiSVGFilename)
+                    print(f'-> Getting ({"%03d" % i}/{emojiTextFileLength - 1}): {emoji} {f"u{ord(emoji)}"} {name[:-1]}')
+                    
+                    try:    
+                        urllib.request.urlretrieve(emojiSVGLink % fileCode.replace('-ufe0f', '').replace('-u', '_'), emojiSVGFilename)
+                    except:
+                        urllib.request.urlretrieve(emojiSVGLink % fileCode.replace('-u', '_'), emojiSVGFilename)
                 except:
                     print('Failed to download emoji svg.')
                     return
@@ -92,59 +96,6 @@ def main(argc, argv):
 
         emojiTextFile = open(EMOJIS_TXT, 'w')
         emojiTextFile.write(emojiData)
-
-    # if not os.path.isdir(MERGED_DIR):    
-    #     os.makedirs(MERGED_DIR)
-
-    # print('Downloading merged emoji:')
-
-    # emojiTextFile = open(EMOJIS_TXT, 'r')
-    # lines = emojiTextFile.readlines()
-    # emojiTextFileLength = len(lines)
-    
-    # emojiDataList = [ for i, line in enumerate(lines)]
-
-    # for i in range()
-
-    # for i in reversed(range(MAX_EMOJI_COUNT)):
-    #     for j in reversed(range(i, MAX_EMOJI_COUNT)):
-    #         filename = os.path.join(MERGED_DIR, '%03d_%03d.png' % (i, j))
-            
-    #         if os.path.isfile(filename):
-    #             continue
-
-    #         print('--> (%03d/%03d): [%s] x [%s]' % (i + 1, j + 1, EMOJIS[i][0], EMOJIS[j][0]))
-            
-    #         code1 = '-'.join(['u%s' % code for code in EMOJIS[i][2]])
-    #         code2 = '-'.join(['u%s' % code for code in EMOJIS[j][2]])
-    #         links = []
-
-    #         try: 
-    #             for extensionCode in ['-ufe0f', '']:
-    #                 code1e = code1 + (extensionCode if len(EMOJIS[i][2]) > 1 else '')
-    #                 code2e = code2 + (extensionCode if len(EMOJIS[j][2]) > 1 else '') 
-
-    #                 try:
-    #                     pre = EMOJIS[i][1]
-    #                     u1 = code1e
-    #                     u2 = code2e
-    #                     link = 'https://www.gstatic.com/android/keyboard/emojikitchen/%s/%s/%s_%s.png' % (pre, u1, u1, u2)
-    #                     links += [link]
-    #                     urllib.request.urlretrieve(link, filename)
-    #                 except:
-    #                     pre = EMOJIS[j][1]
-    #                     u1 = code2e
-    #                     u2 = code1e
-    #                     link = 'https://www.gstatic.com/android/keyboard/emojikitchen/%s/%s/%s_%s.png' % (pre, u1, u1, u2)
-    #                     links += [link]
-    #                     urllib.request.urlretrieve(link, filename)
-
-    #                 break
-    #         except:
-    #             for link in links:
-    #                 print('--> Failed: %s' % link)
-
-    # print('Downloading merged emoji complete!')
 
 if __name__ == '__main__':
    main(len(sys.argv) - 1, sys.argv[1:])
