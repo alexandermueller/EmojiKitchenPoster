@@ -30,12 +30,10 @@ def main(argc, argv):
     print('Retrieving missing emoji svg files:')
 
     emojiData = ''
-    emojiSVGLink = 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/svg/emoji_%s.svg'
+    emojiSVGLink = 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/svg/emoji_%s.svg' # Also check out KeyboardCool 
     emojiTextFile = open(EMOJIS_TXT, 'r')
     lines = emojiTextFile.readlines()
     emojiTextFileLength = len(lines)
-    exceptions = { f'u{emoji[2][0]}' : emoji for emoji in EMOJI_EXCEPTIONS }
-    exceptionsSeen = 0
 
     for i, line in enumerate(lines):
         components = line.split(',')
@@ -43,51 +41,20 @@ def main(argc, argv):
         # If emojis.txt already has the data for that emoji, try to get it.
         if len(components) == 3:
             emoji, fileCode, name = components
+            emojiName = name[:-1]
             emojiSVGFilename = f'{EMOJIS_DIR}/{fileCode}.svg'
             
             if not os.path.isfile(emojiSVGFilename):
                 try:
-                    print(f'-> Getting ({"%03d" % i}/{emojiTextFileLength - 1}): {emoji} {f"u{ord(emoji)}"} {name[:-1]}')
+                    print(f'-> Getting ({"%03d" % i}/{emojiTextFileLength - 1}): {emoji} {fileCode} {emojiName}') #f"u{ord(emoji)}"
                     
                     try:    
                         urllib.request.urlretrieve(emojiSVGLink % fileCode.replace('-ufe0f', '').replace('-u', '_'), emojiSVGFilename)
                     except:
                         urllib.request.urlretrieve(emojiSVGLink % fileCode.replace('-u', '_'), emojiSVGFilename)
                 except:
-                    print('Failed to download emoji svg.')
+                    print(f'XX Failed to download emoji svg: {emoji} {fileCode} {emojiName}')
                     return
-        # Otherwise get the emojis and build up emojis.txt with the data.
-        else:
-            emoji = line[0]
-            code = f'u{ord(emoji):x}'
-            name = unicodedata.name(emoji)
-            emojiData += f'{emoji},{code},{name}\n'
-            emojiSVGFilename = f'{EMOJIS_DIR}/{code}.svg'
-
-            if not os.path.isfile(emojiSVGFilename):
-                try:
-                    print(f'-> Getting ({"%03d" % (i + exceptionsSeen)}/{emojiTextFileLength + len(EMOJI_EXCEPTIONS) - 1}): {name}')
-                    urllib.request.urlretrieve(emojiSVGLink % code, emojiSVGFilename)
-                except:
-                    print('Failed to download emoji svg.')
-                    return
-
-            if code in exceptions:
-                exceptionsSeen += 1
-                exception = exceptions[code] 
-                exceptionCode = f'u{"-u".join(exception[2])}'
-                exceptionCodeForLink = f'u{"_".join(exception[2])}'
-                exceptionName = exception[0]
-                emojiData += f'{EXCEPTION_CHAR},{exceptionCode},{exceptionName}\n'
-                exceptionSVGFilename = f'{EMOJIS_DIR}/{exceptionCode}.svg'
-
-                if not os.path.isfile(exceptionSVGFilename):
-                    try:
-                        print(f'-> Getting ({"%03d" % (i + exceptionsSeen)}/{emojiTextFileLength + len(EMOJI_EXCEPTIONS) - 1}): {exceptionName.upper()}')
-                        urllib.request.urlretrieve(emojiSVGLink % exceptionCodeForLink, exceptionSVGFilename)
-                    except:
-                        print('Failed to download emoji svg.')
-                        return
 
     print('-> Complete!')
 

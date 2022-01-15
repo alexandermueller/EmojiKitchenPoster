@@ -40,13 +40,13 @@ def downloadMergedFile(first, second):
                 u2 = code2
                 filename = f"{u1}_{u2}.png"
                 link = 'https://www.gstatic.com/android/keyboard/emojikitchen/%s/%s/%s_%s.png' % (date, u1, u1, u2)
-                urllib.request.urlretrieve(link, filename)
+                urllib.request.urlretrieve(link, f"{MERGED_DIR}/{filename}")
             except:
                 u1 = code2
                 u2 = code1
                 filename = f"{u1}_{u2}.png"
                 link = 'https://www.gstatic.com/android/keyboard/emojikitchen/%s/%s/%s_%s.png' % (date, u1, u1, u2)
-                urllib.request.urlretrieve(link, filename)
+                urllib.request.urlretrieve(link, f"{MERGED_DIR}/{filename}")
 
             return
         except:
@@ -70,10 +70,8 @@ def main(argc, argv):
                 print(f"-> ({str(i).zfill(3)}/{str(j).zfill(3)}): {getEmoji(i)} + {getEmoji(j)} - {getEmojiName(i)} + {getEmojiName(j)}")
                 downloadMergedFile(i, j)
             except:
-                print(f"-> The combination does not exist! ({getMergedFileName(i, j)})")
+                print(f"XX The combination does not exist!")
                 continue
-
-            
 
         # emojiTextFile = open(EMOJIS_TXT, 'r')
         # lines = emojiTextFile.readlines()
@@ -106,3 +104,4 @@ def main(argc, argv):
 
 if __name__ == '__main__':
    main(len(sys.argv) - 1, sys.argv[1:])
+   
