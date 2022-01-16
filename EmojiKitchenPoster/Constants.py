@@ -16,4 +16,7 @@ RED_FILL = (255, 0, 0, 255)
 WHITE_FILL = (255, 255, 255, 255)
 BLACK_FILL = (0, 0, 0, 255)
 
+# TODO: Try assigning each emoji in emojis.txt a date, and
+#       compare the two dates to determine the order instead
+#       of brute forcing it.
 DATES = [20201001, 20210218, 20210521, 20210831, 20211115]
