@@ -4,7 +4,9 @@
 import os
 import sys
 import urllib
+import asyncio
 import requests
+import functools
 import unicodedata
 from lxml import html
 from Constants import *
@@ -13,6 +15,13 @@ emojiTextFile = open(EMOJIS_TXT, 'r')
 lines = emojiTextFile.readlines()
 EMOJIS = [line[:-1].split(',') for line in lines]
 MAX_EMOJI_COUNT = len(lines)
+CHUNK_SIZE = 1
+
+def chunker(seq, size):
+    return (seq[pos:pos + size] for pos in range(0, len(seq), size))
+
+def reduce(results):
+    return functools.reduce(lambda a, b: a or b, results)
 
 def getEmoji(index):
     return EMOJIS[index][0]
@@ -29,49 +38,61 @@ def getEmojiFileName(index):
 def getMergedFileName(first, second):
     return "%s/%s_%s.png" % (MERGED_DIR, getEmojiCode(first), getEmojiCode(second))
 
-def downloadMergedFile(first, second):
-    code1 = getEmojiCode(first)
-    code2 = getEmojiCode(second)
-
-    for date in DATES:
-        try:
-            try:
-                u1 = code1
-                u2 = code2
-                filename = f"{u1}_{u2}.png"
-                link = 'https://www.gstatic.com/android/keyboard/emojikitchen/%s/%s/%s_%s.png' % (date, u1, u1, u2)
-                urllib.request.urlretrieve(link, f"{MERGED_DIR}/{filename}")
-            except:
-                u1 = code2
-                u2 = code1
-                filename = f"{u1}_{u2}.png"
-                link = 'https://www.gstatic.com/android/keyboard/emojikitchen/%s/%s/%s_%s.png' % (date, u1, u1, u2)
-                urllib.request.urlretrieve(link, f"{MERGED_DIR}/{filename}")
-
-            return
-        except:
-            continue
-
-    raise
+async def downloadFile(date, u1, u2):
+    filename = f"{u1}_{u2}.png"
+    link = 'https://www.gstatic.com/android/keyboard/emojikitchen/%s/%s/%s_%s.png' % (date, u1, u1, u2)
+    
+    try:
+        urllib.request.urlretrieve(link, f"{MERGED_DIR}/{filename}")
+        return True
+    except:
+        return False
 
 
-def main(argc, argv):
+async def downloadMergedFile(first, second):
+    results = await asyncio.gather(
+        *[downloadFile(date, getEmojiCode(first), getEmojiCode(second)) for date in DATES]
+    )
+
+    return reduce(results)
+
+async def checkAndDownloadMergedFile(a, b):
+    if a == b or a == 0 or b == 0 or os.path.isfile(getMergedFileName(a, b)) or os.path.isfile(getMergedFileName(b, a)):
+        return (-1, True)
+    
+    results = await asyncio.gather(
+        *[downloadMergedFile(first, second) for first, second in [(a, b), (b, a)]]
+    )
+
+    return (b, reduce(results))
+
+async def main(argc, argv):
     if not os.path.isdir(MERGED_DIR):    
         os.makedirs(MERGED_DIR)
 
     print('Downloading merged emoji:')
 
-    for i in range(MAX_EMOJI_COUNT):        
-        for j in range(i, MAX_EMOJI_COUNT):
-            if i == j or i == 0 or j == 0 or os.path.isfile(getMergedFileName(i, j)) or os.path.isfile(getMergedFileName(j, i)):
-                continue
+    for a in range(MAX_EMOJI_COUNT):        
+        for chunk in chunker(range(a, MAX_EMOJI_COUNT), CHUNK_SIZE):
+            results = await asyncio.gather(
+                *[checkAndDownloadMergedFile(a, b) for b in chunk]
+            )
 
-            try: 
-                print(f"-> ({str(i).zfill(3)}/{str(j).zfill(3)}): {getEmoji(i)} + {getEmoji(j)} - {getEmojiName(i)} + {getEmojiName(j)}")
-                downloadMergedFile(i, j)
-            except:
-                print(f"XX The combination does not exist!")
-                continue
+            for b, result in results:
+                if b == -1:
+                    continue
+                
+                print(f"-> ({str(a).zfill(3)}/{str(b).zfill(3)}): {getEmoji(a)} + {getEmoji(b)} - {getEmojiName(a)} + {getEmojiName(b)}")
+                
+                if not result:
+                    print(f"XX The combination does not exist!")
+    
+    print('Downloading merged emoji complete!')
+
+
+    # for i in range(MAX_EMOJI_COUNT):        
+    #     for j in range(i, MAX_EMOJI_COUNT):
+            
 
         # emojiTextFile = open(EMOJIS_TXT, 'r')
         # lines = emojiTextFile.readlines()
@@ -100,8 +121,5 @@ def main(argc, argv):
         #             for link in links:
         #                 print('--> Failed: %s' % link)
 
-        # print('Downloading merged emoji complete!')
-
 if __name__ == '__main__':
-   main(len(sys.argv) - 1, sys.argv[1:])
-   
+   asyncio.run(main(len(sys.argv) - 1, sys.argv[1:]))
