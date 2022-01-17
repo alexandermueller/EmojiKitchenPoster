@@ -21,7 +21,7 @@ def chunker(seq, size):
     return (seq[pos:pos + size] for pos in range(0, len(seq), size))
 
 def reduce(results):
-    return functools.reduce(lambda a, b: a or b, results)
+    return functools.reduce(lambda x, y: x or y, results)
 
 def getEmoji(index):
     return EMOJIS[index][0]
@@ -32,6 +32,9 @@ def getEmojiCode(index):
 def getEmojiName(index):
     return EMOJIS[index][2]
 
+def getEmojiDate(index):
+    return EMOJIS[index][3]
+
 def getEmojiFileName(index):
     return "%s/%s.png" % (EMOJIS_DIR, getEmojiCode(index))
 
@@ -41,6 +44,7 @@ def getMergedFileName(first, second):
 async def downloadFile(date, u1, u2):
     filename = f"{u1}_{u2}.png"
     link = 'https://www.gstatic.com/android/keyboard/emojikitchen/%s/%s/%s_%s.png' % (date, u1, u1, u2)
+
     try:
         urllib.request.urlretrieve(link, f"{MERGED_DIR}/{filename}")
         return True
@@ -56,12 +60,17 @@ async def downloadMergedFile(first, second):
     return reduce(results)
 
 async def checkAndDownloadMergedFile(a, b):
-    if a == 0 or b == 0 or os.path.isfile(getMergedFileName(a, b)) or os.path.isfile(getMergedFileName(b, a)):
+    if os.path.isfile(getMergedFileName(a, b)) or os.path.isfile(getMergedFileName(b, a)):
         return (-1, True)
     
+    if "" not in [getEmojiDate(a), getEmojiDate(b)]:
+        first, second = (a, b) if getEmojiDate(a) >= getEmojiDate(b) else (b, a)
+
+        return (b, await downloadFile(getEmojiDate(first), getEmojiCode(first), getEmojiCode(second)))
+
     results = await asyncio.gather(
         *[downloadMergedFile(first, second) for first, second in [(a, b), (b, a)]]
-    )
+    )       
 
     return (b, reduce(results))
 

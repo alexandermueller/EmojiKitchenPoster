@@ -42,7 +42,7 @@ async def fetchEmojiDate(index):
             *[isEmojiDate(date, index) for date in DATES]
         )
 
-        return ', '.join(sorted(list(map(lambda a: str(a[1]), list(filter(lambda a: a[0], results))))))
+        return ', '.join(sorted(list(map(lambda x: str(x[1]), list(filter(lambda x: x[0], results))))))
 
 async def main(argc, argv):
     if not os.path.isdir(MERGED_DIR):    
