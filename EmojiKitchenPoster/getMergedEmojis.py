@@ -41,7 +41,6 @@ def getMergedFileName(first, second):
 async def downloadFile(date, u1, u2):
     filename = f"{u1}_{u2}.png"
     link = 'https://www.gstatic.com/android/keyboard/emojikitchen/%s/%s/%s_%s.png' % (date, u1, u1, u2)
-    
     try:
         urllib.request.urlretrieve(link, f"{MERGED_DIR}/{filename}")
         return True
@@ -57,7 +56,7 @@ async def downloadMergedFile(first, second):
     return reduce(results)
 
 async def checkAndDownloadMergedFile(a, b):
-    if a == b or a == 0 or b == 0 or os.path.isfile(getMergedFileName(a, b)) or os.path.isfile(getMergedFileName(b, a)):
+    if a == 0 or b == 0 or os.path.isfile(getMergedFileName(a, b)) or os.path.isfile(getMergedFileName(b, a)):
         return (-1, True)
     
     results = await asyncio.gather(
@@ -88,38 +87,6 @@ async def main(argc, argv):
                     print(f"XX The combination does not exist!")
     
     print('Downloading merged emoji complete!')
-
-
-    # for i in range(MAX_EMOJI_COUNT):        
-    #     for j in range(i, MAX_EMOJI_COUNT):
-            
-
-        # emojiTextFile = open(EMOJIS_TXT, 'r')
-        # lines = emojiTextFile.readlines()
-        # emojiTextFileLength = len(lines)
-        
-        # emojiDataList = [ for i, line in enumerate(lines)]
-
-        # for i in range()
-
-        # for i in reversed(range(MAX_EMOJI_COUNT)):
-        #     for j in reversed(range(i, MAX_EMOJI_COUNT)):
-        #         filename = os.path.join(MERGED_DIR, '%03d_%03d.png' % (i, j))
-                
-        #         if os.path.isfile(filename):
-        #             continue
-
-        #         print('--> (%03d/%03d): [%s] x [%s]' % (i + 1, j + 1, EMOJIS[i][0], EMOJIS[j][0]))
-                
-        #         code1 = '-'.join(['u%s' % code for code in EMOJIS[i][2]])
-        #         code2 = '-'.join(['u%s' % code for code in EMOJIS[j][2]])
-        #         links = []
-
-        #         try: 
-        #             
-        #         except:
-        #             for link in links:
-        #                 print('--> Failed: %s' % link)
 
 if __name__ == '__main__':
    asyncio.run(main(len(sys.argv) - 1, sys.argv[1:]))
