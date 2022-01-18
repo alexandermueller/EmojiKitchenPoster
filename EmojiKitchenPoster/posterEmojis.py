@@ -12,6 +12,14 @@ lines = emojiTextFile.readlines()
 EMOJIS = [line[:-1].split(',') for line in lines]
 MAX_EMOJI_COUNT = len(lines)
 
+class DynamicColour:
+    def __init__(self, dark, light):
+        self.dark = dark
+        self.light = light
+
+    def fill(self):
+        return self.dark if isDark() else self.light
+
 def clamp(minVal, val, maxVal):
     return max(minVal, min(val, maxVal))
 
@@ -30,6 +38,9 @@ def getMergedFileName(first, second):
 def main(argc, argv):
     print("Preparing poster file...")
     
+    textColour = DynamicColour(dark = WHITE_FILL, light = BLACK_FILL)
+    niceColour = DynamicColour(dark = RED_FILL, light = RED_FILL)
+
     font = ImageFont.truetype(FONT_TYPE, int(FONT_SIZE / 2))
     rows = MAX_EMOJI_COUNT
     columns = MAX_EMOJI_COUNT
@@ -37,14 +48,17 @@ def main(argc, argv):
     startRow = 0
     startColumn = 0
 
-    if argc == 2:
-        columns, rows = [clamp(1, int(i), MAX_EMOJI_COUNT) if i.isnumeric() else MAX_EMOJI_COUNT for i in argv]
+    if argc in [1, 3, 5]:
+        setModes(str(argv[-1]).lower())
 
-    if argc == 4:
+    if argc in [2, 3]:
+        columns, rows = [clamp(1, int(i), MAX_EMOJI_COUNT) if i.isnumeric() else MAX_EMOJI_COUNT for i in argv[:2]]
+
+    if argc in [4, 5]:
         startColumn, startRow = [clamp(0, int(argv[i * 2]) - 1, MAX_EMOJI_COUNT) if argv[i * 2] else MAX_EMOJI_COUNT for i in range(2)]
         columns, rows = [clamp(1, int(argv[i * 2 + 1]), MAX_EMOJI_COUNT) if argv[i * 2 + 1] else MAX_EMOJI_COUNT for i in range(2)]
 
-    background = Image.open("./Assets/background.png").convert("RGBA")
+    background = Image.open(getDynamicBackground()).convert("RGBA")
     finalW, finalH = (SPRITE_WIDTH * (columns + 1), SPRITE_HEIGHT * (rows + 1) + BOTTOM_DELTA)
     final = Image.new("RGBA", (finalW, finalH))
     draw = ImageDraw.Draw(final)
@@ -55,7 +69,7 @@ def main(argc, argv):
     # Draw background first
     print("Adding background...")
     
-    origin = Image.open("./Assets/origin.png").convert("RGBA")
+    origin = Image.open(getDynamicOrigin()).convert("RGBA")
     final.paste(origin, (0, 0, SPRITE_WIDTH, SPRITE_HEIGHT))
 
     for i in range(columns + 1):
@@ -72,7 +86,7 @@ def main(argc, argv):
 
     # Plop origin cell down
 
-    origin = Image.open("./Assets/origin.png").convert("RGBA")
+    origin = Image.open(getDynamicOrigin()).convert("RGBA")
     final.paste(origin, (0, 0, SPRITE_WIDTH, SPRITE_HEIGHT))
     
     # Draw sprites and text
@@ -84,10 +98,10 @@ def main(argc, argv):
                 fileName = ""
                 first = 0
                 second = 0
-                fill = BLACK_FILL
+                colour = textColour
 
                 if i == startColumn or j == startRow:
-                    fill = RED_FILL
+                    colour = niceColour
                     index = (j if i == startColumn else i) - 1
                     text = emojiName = getEmojiName(index)
                     fileName = getEmojiFileName(index)
@@ -113,7 +127,7 @@ def main(argc, argv):
                 emojiName = string.capwords(emojiName)
 
                 if i == j:
-                    fill = RED_FILL
+                    colour = niceColour
                     text = emojiName = "%s x 2" % string.capwords(getEmojiName(first))
 
                 print("Adding Sprite (%03d, %03d): %s" % (first, second, emojiName))
@@ -128,7 +142,7 @@ def main(argc, argv):
 
                 for index, name in enumerate(text.split("+")):
                     w, h = draw.textsize(name, font=font)
-                    draw.text((x + (SPRITE_WIDTH - w) / 2, y + (SPRITE_HEIGHT - 33) + (h * index)), name, fill=fill, font=font)
+                    draw.text((x + (SPRITE_WIDTH - w) / 2, y + (SPRITE_HEIGHT - 33) + (h * index)), name, fill=colour.fill(), font=font)
 
     # Finally, draw credits
 
@@ -137,7 +151,7 @@ def main(argc, argv):
     w, h = draw.textsize(credits, font=f)
     delta = (BOTTOM_DELTA - h) / 2
     x, y = ((finalW - w) / 2, finalH - h - delta)
-    draw.text((x, y), credits, fill=(150, 150, 150, 255), font=f)
+    draw.text((x, y), credits, fill=GRAY_FILL, font=f)
 
     print("Saving...", flush=True)
     final.save('%s/EmojiKitchenPoster(%ix%i)[rowStart=%s, columnStart=%s].png' % (POSTER_DIR, columns, rows, startRow, startColumn))

@@ -16,16 +16,16 @@ def main(argc, argv):
     if not os.path.isdir(EMOJIS_DIR):
         os.makedirs(EMOJIS_DIR)
 
-    print('Downloading emoji list...')
+    # print('Downloading emoji list...')
     
-    if not os.path.isfile(EMOJIS_TXT):
-        emojiTextLink = 'https://raw.githubusercontent.com/UCYT5040/Google-Sticker-Mashup-Research/main/emojis.txt'
+    # if not os.path.isfile(EMOJIS_TXT):
+    #     emojiTextLink = 'https://raw.githubusercontent.com/UCYT5040/Google-Sticker-Mashup-Research/main/emojis.txt'
 
-        try:
-            urllib.request.urlretrieve(emojiTextLink, EMOJIS_TXT)
-        except:
-            print('Failed to download emoji list.')
-            return
+    #     try:
+    #         urllib.request.urlretrieve(emojiTextLink, EMOJIS_TXT)
+    #     except:
+    #         print('Failed to download emoji list.')
+    #         return
 
     print('Retrieving missing emoji svg files:')
 
@@ -39,9 +39,8 @@ def main(argc, argv):
         components = line.split(',')
         
         # If emojis.txt already has the data for that emoji, try to get it.
-        if len(components) == 3:
-            emoji, fileCode, name = components
-            emojiName = name[:-1]
+        if len(components) >= 3:
+            emoji, fileCode, emojiName = components[:3]
             emojiSVGFilename = f'{EMOJIS_DIR}/{fileCode}.svg'
             
             if not os.path.isfile(emojiSVGFilename):
