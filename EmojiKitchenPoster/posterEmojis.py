@@ -154,7 +154,7 @@ def main(argc, argv):
     draw.text((x, y), credits, fill=GRAY_FILL, font=f)
 
     print("Saving...", flush=True)
-    final.save('%s/EmojiKitchenPoster(%ix%i)[rowStart=%s, columnStart=%s].png' % (POSTER_DIR, columns, rows, startRow, startColumn))
+    final.save('%s/EmojiKitchenPoster(%ix%i)[rowStart=%s, columnStart=%s]_%s.png' % (POSTER_DIR, columns, rows, startRow, startColumn, getModeFolder()))
     print("Finished!")
 
 if __name__ == '__main__':
